@@ -11,7 +11,8 @@
 -export([start_link/1]).
 -export([add_logger/1]).
 -export([add_guard/4]).
-
+-export([remove_guard/1]).
+-export([remove_logger/1]).
 %% Supervisor callbacks
 -export([init/1]).
 
@@ -22,6 +23,10 @@ start_link(Default_logger) ->
     ?LOG2("Result in supervisor is ~p~n",[R]),
     R.
 
+remove_guard(Name) ->
+    supervisor:terminate_child(?MODULE, Name),
+    supervisor:delete_child(?MODULE, Name).
+
 add_guard(Logger, Appender, Name, Conf) ->
     C = {Name,
 	 {logger_guard, start_link ,[Logger, Appender, Name, Conf]},
@@ -31,6 +36,20 @@ add_guard(Logger, Appender, Name, Conf) ->
 	 [logger_guard]},
     ?LOG2("Adding ~p to ~p~n",[C, ?MODULE]),
     supervisor:start_child(?MODULE, C).
+
+remove_logger(Name) when is_atom(Name) ->
+    N = atom_to_list(Name),
+    remove_logger(N);
+remove_logger(Name) when is_list(Name) ->
+    List = gen_event:which_handlers(list_to_atom(Name)),
+    F = fun(Child) ->
+                supervisor:terminate_child(?MODULE, Child),
+                supervisor:delete_child(?MODULE, Child)
+        end,
+    [F(C) || {_, C} <- List],
+    supervisor:terminate_child(?MODULE, Name),
+    supervisor:delete_child(?MODULE, Name).
+    
     
 add_logger(Name) when is_atom(Name) ->
     N = atom_to_list(Name),

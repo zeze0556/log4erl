@@ -11,7 +11,9 @@
 -export([change_level/3]).
 -export([change_filename/3]).
 -export([add_logger/1]).
+-export([remove_logger/1]).
 -export([add_appender/3]).
+-export([remove_appender/1]).
 -export([change_format/3]).
 -export([log/4]).
 
@@ -25,9 +27,16 @@ start_link(Logger) when is_list(Logger) ->
 add_logger(Logger) ->
     log4erl_sup:add_logger(Logger).
 
+remove_logger(Logger) ->
+    log4erl_sup:remove_logger(Logger).
+
 add_appender(Logger, {Appender, Name} , Conf) ->
     ?LOG2("add_appender ~p with name ~p to ~p with Conf ~p ~n",[Appender, Name, Logger, Conf]),
     log4erl_sup:add_guard(Logger, Appender, Name, Conf).
+
+remove_appender(Name) ->
+    ?LOG2("remove_appender ~p ~n",[Name]),
+    log4erl_sup:remove_guard(Name).
     
 change_log_level(Logger, Level) ->
     notify_logger(Logger, {change_level, Level}).

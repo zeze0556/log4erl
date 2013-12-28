@@ -17,7 +17,7 @@
 	 handle_info/2, terminate/2, code_change/3]).
 
 -export([add_handler/0, add_handler/1]).
-
+-export([remove_handler/0]).
 -record(elogger_l4e_mappings, {error=error, info_msg=info, warning_msg=warn,
 			       error_report=error, info_report=info,
 			       warning_report=warn}).
@@ -33,6 +33,9 @@ init(Conf) ->
 
 add_handler(Args) ->
     error_logger:add_report_handler(?MODULE, Args).
+
+remove_handler() ->
+    error_logger:delete_report_handler(?MODULE).
 
 add_handler() ->
     error_logger:add_report_handler(?MODULE,[]).

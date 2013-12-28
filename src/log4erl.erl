@@ -12,7 +12,9 @@
 -export([change_level/2, change_level/3]).
 -export([change_filename/2, change_filename/3]).
 -export([add_logger/1, conf/1]).
+-export([remove_logger/1]).
 -export([add_appender/2, add_appender/3]).
+-export([remove_appender/1]).
 -export([add_file_appender/2, add_file_appender/3]).
 -export([add_console_appender/2, add_console_appender/3]).
 -export([add_smtp_appender/2, add_smtp_appender/3]).
@@ -22,6 +24,7 @@
 -export([get_appenders/0, get_appenders/1]).
 -export([change_format/2, change_format/3]).
 -export([error_logger_handler/0, error_logger_handler/1]).
+-export([remove_error_logger_handler/0]).
 
 -export([log/2, log/3, log/4]).
 
@@ -45,6 +48,9 @@ stop(_State) ->
     log_filter_codegen:reset(),
     ok.
 
+remove_logger(Logger) ->
+    try_msg({remove_logger, Logger}).
+
 add_logger(Logger) ->
     try_msg({add_logger, Logger}).
 
@@ -55,6 +61,9 @@ add_appender(Appender, Conf) ->
 %% Appender = {Appender, Name}
 add_appender(Logger, Appender, Conf) ->
     try_msg({add_appender, Logger, Appender, Conf}).
+
+remove_appender(Appender) ->
+    try_msg({remove_appender, Appender}).
     
 add_console_appender(AName, Conf) ->
     add_appender(?DEFAULT_LOGGER, {console_appender, AName}, Conf).
@@ -123,6 +132,9 @@ error_logger_handler() ->
 
 error_logger_handler(Args) ->
     error_logger_log4erl_h:add_handler(Args).
+
+remove_error_logger_handler() ->
+    error_logger_log4erl_h:remove_handler().
 
 %% For default logger
 change_log_level(Level) ->
@@ -209,6 +221,10 @@ debug(Logger, Log, Data) ->
 
 handle_call({add_logger, Logger}) ->
     log_manager:add_logger(Logger);
+handle_call({remove_logger, Logger}) ->
+    log_manager:remove_logger(Logger);
+handle_call({remove_appender, Appender}) ->
+    log_manager:remove_appender( Appender);
 handle_call({add_appender, Logger, Appender, Conf}) ->
     log_manager:add_appender(Logger, Appender, Conf);
 handle_call({get_appenders, Logger}) ->
