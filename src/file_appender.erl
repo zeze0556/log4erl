@@ -171,13 +171,17 @@ check_rotation(State) ->
 	    File = Dir ++ "/" ++ Fname ++  "." ++ Suf,
 	    {ok, Finfo} = file:read_file_info(File),
 	    Size = Finfo#file_info.size,
-	    if
-		Size > Max ->
-		    {ok, State2} = rotate(State),
-		    State2;
+	    if Max =< 0 ->
+			State;
 		true ->
-		    State
-	    end;
+			if
+				Size > Max ->
+					{ok, State2} = rotate(State),
+					State2;
+				true ->
+					State
+			end
+	end;
 	%% time-based rotation is implemented in a seperate process
 	_ ->
 	    State
